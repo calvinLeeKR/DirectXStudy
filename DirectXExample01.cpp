@@ -33,6 +33,7 @@ ID3D11Buffer* g_pVertexBuffer = nullptr;
 
 ID3D11ShaderResourceView* g_pTextureRV = nullptr;
 ID3D11SamplerState* g_pSamplerLinear = nullptr;
+ID3D11BlendState* g_pBlendState = nullptr;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -66,6 +67,13 @@ void Render()
 
     pd3dContext->PSSetShaderResources(0, 1, &g_pTextureRV);
     pd3dContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+
+	if (g_pBlendState) {
+		FLOAT blendFactor[4] = { 0.f,0.f,0.f,0.f };
+		UINT mask = 0xFFFFFFFF;
+		pd3dContext->OMSetBlendState(g_pBlendState, blendFactor, mask);
+
+	}
 
     pd3dContext->Draw(4, 0);
 
@@ -104,6 +112,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (FAILED(Init_PixelShader())) goto E_FINAL_POS;
     if (FAILED(Init_Model())) goto E_FINAL_POS;
     if (FAILED(Init_Texture())) goto E_FINAL_POS;
+	if (FAILED(Init_BlendState())) goto E_FINAL_POS;
 
     while (WM_QUIT != msg.message)
     {
@@ -131,9 +140,7 @@ E_FINAL_POS:
     SAFE_RELEASE(pd3dContext);
     SAFE_RELEASE(pSwapChain);
     SAFE_RELEASE(pd3dDevice);
-
-
-
+	SAFE_RELEASE(g_pBlendState);
 
     return (int) msg.wParam;
 }
@@ -272,7 +279,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
-
 
 HRESULT InitDevice()
 {

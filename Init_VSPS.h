@@ -1,4 +1,4 @@
-
+﻿
 
 HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -104,8 +104,6 @@ HRESULT Init_PixelShader()
 		return hr;
 
 	return S_OK;
-
 }
-
 
 

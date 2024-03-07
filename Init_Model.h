@@ -25,8 +25,8 @@ HRESULT Init_Model()
 {
 	HRESULT hr;
 	// Create vertex buffer
-	XMFLOAT2 xmflt1 = ScreenToCoord(300, 300);
-	XMFLOAT2 xmflt2 = ScreenToCoord(350, 350);
+	XMFLOAT2 xmflt1 = ScreenToCoord(725, 525);
+	XMFLOAT2 xmflt2 = ScreenToCoord(725+75, 525+75);
 
 	SimpleVertex vertices[] =
 	{
