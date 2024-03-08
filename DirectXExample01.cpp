@@ -17,6 +17,8 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 HWND gWnd;
 INT window_Width = 0;
 INT window_Height = 0;
+INT img_Width = 0;
+INT img_Height = 0;
 
 D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -30,10 +32,13 @@ ID3D11VertexShader* g_pVertexShader = nullptr;
 ID3D11InputLayout* g_pVertexLayout = nullptr;
 ID3D11PixelShader* g_pPixelShader = nullptr;
 ID3D11Buffer* g_pVertexBuffer = nullptr;
+ID3D11Buffer* g_pIndexBuffer = nullptr;
 
 ID3D11ShaderResourceView* g_pTextureRV = nullptr;
 ID3D11SamplerState* g_pSamplerLinear = nullptr;
 ID3D11BlendState* g_pBlendState = nullptr;
+
+
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -47,37 +52,85 @@ HRESULT            InitDevice();
 #include "Init_Model.h"
 #include "Init_Texture.h"
 
+int leftX = 30;
+int rightX = 700;
+int dirX = -1;
+int dirY = 1;
+
+float offset = 0.f;
+float dir = 0.005f;
+float end = 0.5f;
+
+void MovingVertex()
+{
+	D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+
+	pd3dContext->Map(g_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);  // D3D11_MAP_WRITE_DISCARD, D3D11_MAP_WRITE_NO_OVERWRITE   
+
+	offset += dir;
+	if (offset > 0.3f) dir = -dir;
+	else if (offset < -0.3f) dir = -dir;
+
+	SimpleVertex* vertices = static_cast<SimpleVertex*>(mappedBuffer.pData);
+
+	vertices[0].Pos = XMFLOAT3(-0.3f + offset, -0.3f + offset, 0.5f);
+	vertices[0].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vertices[0].Tex = XMFLOAT2(0.0f, 1.0f);
+
+	vertices[1].Pos = XMFLOAT3(-0.3f + offset, 0.3f + offset, 0.5f);
+	vertices[1].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vertices[1].Tex = XMFLOAT2(0.0f, 0.0f);
+
+	vertices[2].Pos = XMFLOAT3(0.3f + offset, -0.3f + offset, 0.5f);
+	vertices[2].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vertices[2].Tex = XMFLOAT2(1.0f, 1.0f);
+
+	vertices[3].Pos = XMFLOAT3(0.3f + offset, 0.3f + offset, 0.5f);
+	vertices[3].Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vertices[3].Tex = XMFLOAT2(1.0f, 0.0f);
+
+	pd3dContext->Unmap(g_pVertexBuffer, 0);
+
+}
 
 void Render()
 {
     pd3dContext->OMSetRenderTargets(1, &g_pRenderTargetView, nullptr);
-    pd3dContext->ClearRenderTargetView(g_pRenderTargetView, DirectX::Colors::MidnightBlue);
+    pd3dContext->ClearRenderTargetView(g_pRenderTargetView, DirectX::Colors::MidnightBlue); //clear 해줌
 
     // Set the input layout
+
     pd3dContext->IASetInputLayout(g_pVertexLayout);
     pd3dContext->VSSetShader(g_pVertexShader, nullptr, 0);
-    pd3dContext->PSSetShader(g_pPixelShader, nullptr, 0);
+    pd3dContext->PSSetShader(g_pPixelShader, nullptr, 0); //shader 걸어줌
 
-
-    // Set vertex buffer
-    UINT stride = sizeof(SimpleVertex);
-    UINT offset = 0;
-    pd3dContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-    pd3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    //pd3dContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+    //pd3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
     pd3dContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-    pd3dContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+    pd3dContext->PSSetSamplers(0, 1, &g_pSamplerLinear); //texture 걸어줌
 
 	if (g_pBlendState) {
 		FLOAT blendFactor[4] = { 0.f,0.f,0.f,0.f };
 		UINT mask = 0xFFFFFFFF;
 		pd3dContext->OMSetBlendState(g_pBlendState, blendFactor, mask);
 
-	}
+	} //뒤에 그림과 합침
 
-    pd3dContext->Draw(4, 0);
+	MovingVertex();
 
-    pSwapChain->Present(0, 0);
+	// Set vertex buffer
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	pd3dContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+	pd3dContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pd3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pd3dContext->DrawIndexed(6, 0, 0);
+
+	pSwapChain->Present(DXGI_SWAP_EFFECT_SEQUENTIAL, 0);
+
+
+    pSwapChain->Present(DXGI_SWAP_EFFECT_SEQUENTIAL, 0);
 
     //Sleep(10);
 }
@@ -141,6 +194,7 @@ E_FINAL_POS:
     SAFE_RELEASE(pSwapChain);
     SAFE_RELEASE(pd3dDevice);
 	SAFE_RELEASE(g_pBlendState);
+	SAFE_RELEASE(g_pTextureRV);
 
     return (int) msg.wParam;
 }
@@ -332,6 +386,7 @@ HRESULT InitDevice()
     if (FAILED(hr))
         return hr;
 
+	
     return S_OK;
 }
 

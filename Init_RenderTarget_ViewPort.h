@@ -5,6 +5,7 @@ HRESULT Init_RenderTarget_ViewPort()
 {
 	HRESULT hr = S_OK;
 
+
 	// render target
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	ID3D11Texture2D* pBackBuffer = nullptr;

@@ -3,14 +3,23 @@
 using namespace DirectX;
 
 
-
 HRESULT Init_Texture()
 {
 	HRESULT hr;
 
-	hr = CreateWICTextureFromFile(pd3dDevice, L"1.png", nullptr, &g_pTextureRV);
+	hr = CreateWICTextureFromFile(pd3dDevice, L"2.png", nullptr, &g_pTextureRV);
 	if (FAILED(hr))
 		return hr;
+
+	ID3D11Resource* pResource = nullptr;
+	g_pTextureRV->GetResource(&pResource);
+	{
+		D3D11_TEXTURE2D_DESC desc;
+		((ID3D11Texture2D*)pResource)->GetDesc(&desc);
+		img_Width = desc.Width;
+		img_Height = desc.Height;
+	}
+	pResource->Release();
 
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;

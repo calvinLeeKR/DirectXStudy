@@ -25,8 +25,8 @@ HRESULT Init_Model()
 {
 	HRESULT hr;
 	// Create vertex buffer
-	XMFLOAT2 xmflt1 = ScreenToCoord(725, 525);
-	XMFLOAT2 xmflt2 = ScreenToCoord(725+75, 525+75);
+	XMFLOAT2 xmflt1 = ScreenToCoord(125, 50 );
+	XMFLOAT2 xmflt2 = ScreenToCoord(125+500, 50+500 );
 
 	SimpleVertex vertices[] =
 	{
@@ -36,10 +36,11 @@ HRESULT Init_Model()
 		{XMFLOAT3(xmflt2.x, xmflt1.y, 0.5f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)},
 	};
 	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(SimpleVertex) * 4;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
 
 	D3D11_SUBRESOURCE_DATA InitData = {};
 	InitData.pSysMem = vertices;
@@ -48,9 +49,22 @@ HRESULT Init_Model()
 		return hr;
 
 
+	WORD indices[] =
+	{
+		0,1,2,
+		2,1,3
+	};
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(WORD) * 6;
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	InitData.pSysMem = indices;
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
+	if (FAILED(hr))
+		return hr;
 
 	return S_OK;
-
 }
 
 
