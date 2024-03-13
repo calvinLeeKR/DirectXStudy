@@ -1,71 +1,111 @@
 using namespace DirectX;
 
+ID3D11Buffer* g_pVertexBuffer = nullptr;//버텍스 버퍼
+ID3D11Buffer* g_pIndexBuffer = nullptr; //인덱스 버퍼
+
 struct SimpleVertex
 {
 	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
 	XMFLOAT2 Tex;
 };
 
-XMFLOAT2 ScreenToCoord(int x, int y) { //window_Width
-	XMFLOAT2 xmflt2;
 
-	float window_Height_Half = window_Height / 2;
-	float window_Width_Half = window_Width / 2;
-
-	float relX = (x - window_Width_Half) / window_Width_Half;
-	float relY = (window_Height_Half - y) / window_Height_Half;
-
-	xmflt2.x = relX;
-	xmflt2.y = relY;
-	return xmflt2;
+XMFLOAT3 ScreenToCoord(float x, float y)
+{
+	
+	return { (2 * x / window_Width) - 1.0f  ,1.0f-(2 * y / window_Height)  ,0.5f };
+	
 }
+
 
 HRESULT Init_Model()
 {
-	HRESULT hr;
-	// Create vertex buffer
-	XMFLOAT2 xmflt1 = ScreenToCoord(125, 50 );
-	XMFLOAT2 xmflt2 = ScreenToCoord(125+500, 50+500 );
+    HRESULT hr;
+    // Create vertex buffer
+    SimpleVertex vertices[] =
+    {
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },		//0
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },		//1
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },		//2
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },		//3
 
-	SimpleVertex vertices[] =
-	{
-		{XMFLOAT3(xmflt1.x, xmflt2.y, 0.5f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)},
-		{XMFLOAT3(xmflt1.x, xmflt1.y, 0.5f), XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3(xmflt2.x, xmflt2.y, 0.5f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)},
-		{XMFLOAT3(xmflt2.x, xmflt1.y, 0.5f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)},
-	};
-	D3D11_BUFFER_DESC bd = {};
-	bd.ByteWidth = sizeof(SimpleVertex) * 4;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },	//4
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },		//5
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },		//6
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },		//7
 
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },		//8
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },	//9
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },		//10
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },		//11
 
-	D3D11_SUBRESOURCE_DATA InitData = {};
-	InitData.pSysMem = vertices;
-	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
-	if (FAILED(hr))
-		return hr;
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },		//12
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },		//13
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },		//14
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },		//15
 
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },	//16
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },		//17
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },		//18
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },		//19
 
-	WORD indices[] =
-	{
-		0,1,2,
-		2,1,3
-	};
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },		//20
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },		//21
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },		//22
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },		//23
+    };
 
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * 6;
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = indices;
-	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
-	if (FAILED(hr))
-		return hr;
+    D3D11_BUFFER_DESC bd = {};
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(SimpleVertex) * 24;
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.CPUAccessFlags = 0;
 
-	return S_OK;
+    D3D11_SUBRESOURCE_DATA InitData = {};
+    InitData.pSysMem = vertices;
+    hr = pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
+    if (FAILED(hr))
+        return hr;
+
+    // Create index buffer
+    // Create vertex buffer
+    WORD indices[] =
+    {
+        3,1,0,
+        2,1,3,
+
+        6,4,5,
+        7,4,6,
+
+        11,9,8,
+        10,9,11,
+
+        14,12,13,
+        15,12,14,
+
+        19,17,16,
+        18,17,19,
+
+        22,20,21,
+        23,20,22
+    };
+
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(WORD) * 36;
+    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+    InitData.pSysMem = indices;
+    hr = pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
+    if (FAILED(hr))
+        return hr;
 }
 
-
-
+void Render_Model()
+{
+    // Model
+    UINT stride = sizeof(SimpleVertex);
+    UINT offset = 0;
+    pd3dContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+    pd3dContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+    pd3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}

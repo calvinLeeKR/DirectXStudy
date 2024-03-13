@@ -5,7 +5,6 @@ HRESULT Init_RenderTarget_ViewPort()
 {
 	HRESULT hr = S_OK;
 
-
 	// render target
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	ID3D11Texture2D* pBackBuffer = nullptr;
@@ -35,8 +34,8 @@ HRESULT Init_RenderTarget_ViewPort()
 	 vp.TopLeftY = 0;
 	 vp.Width = (FLOAT)width;
 	 vp.Height = (FLOAT)height;
-	 vp.MinDepth = 0.0f;
-	 vp.MaxDepth = 1.0f;
+	 vp.MinDepth = 0.0f;//zÃà
+	 vp.MaxDepth = 1.0f;//zÃà
 	 pd3dContext->RSSetViewports(1, &vp);
 
 

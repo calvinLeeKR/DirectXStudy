@@ -1,4 +1,7 @@
-癤�
+
+ID3D11VertexShader* g_pVertexShader = nullptr;//버텍스쉐이더
+ID3D11InputLayout* g_pVertexLayout = nullptr;//버텍스레이아웃
+ID3D11PixelShader* g_pPixelShader = nullptr;//픽셀 셰이더
 
 HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -39,8 +42,9 @@ HRESULT Init_VertexShader()
     HRESULT hr;
 
 	// Compile the vertex shader
+	//쉐이더를 프로그램 실행할때마다 컴파일 하지않고 밑에 함수 호출때 컴파일
 	ID3DBlob* pVSBlob = nullptr;
-	hr = CompileShaderFromFile(L"Shader02.fx", "VS", "vs_4_0", &pVSBlob);
+	hr = CompileShaderFromFile(L"Shader02.fx", "VS", "vs_4_0", &pVSBlob);//컴파일 pVSBlob에 버텍스쉐이더데이터 입력선언 Shader02.fx 를 여기서만 컴파일함
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr,
@@ -49,10 +53,7 @@ HRESULT Init_VertexShader()
 	}
 
 	// Create the vertex shader
-	hr = pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), 
-										pVSBlob->GetBufferSize(), 
-										nullptr, 
-										&g_pVertexShader);
+	hr = pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);//데이터 
 	if (FAILED(hr))
 	{
 		pVSBlob->Release();
@@ -63,16 +64,12 @@ HRESULT Init_VertexShader()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{    "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12,D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	UINT numElements = ARRAYSIZE(layout);
 
 	// Create the input layout
-	hr = pd3dDevice->CreateInputLayout(layout, numElements, 
-										pVSBlob->GetBufferPointer(), 
-										pVSBlob->GetBufferSize(), 
-									&g_pVertexLayout);
+	hr = pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
 	pVSBlob->Release();
 	if (FAILED(hr))
 		return hr;
@@ -86,7 +83,7 @@ HRESULT Init_PixelShader()
 
 	// Compile the pixel shader
 	ID3DBlob* pPSBlob = nullptr;
-	hr = CompileShaderFromFile(L"Shader02.fx", "PS", "ps_4_0", &pPSBlob);
+	hr = CompileShaderFromFile(L"Shader02.fx", "PS", "ps_4_0", &pPSBlob);//컴파일 pVSBlob에 픽셀쉐이더데이터 입력
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr,
@@ -95,15 +92,20 @@ HRESULT Init_PixelShader()
 	}
 
 	// Create the pixel shader
-	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), 
-										pPSBlob->GetBufferSize(), 
-										nullptr, 
-										&g_pPixelShader);
+	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
 	pPSBlob->Release();
 	if (FAILED(hr))
 		return hr;
 
 	return S_OK;
+
 }
 
 
+void Render_Shader()
+{
+	// Set the input layout
+	pd3dContext->IASetInputLayout(g_pVertexLayout);         //레이아웃 인풋
+	pd3dContext->VSSetShader(g_pVertexShader, nullptr, 0);  //버텍스 쉐이더 
+	pd3dContext->PSSetShader(g_pPixelShader, nullptr, 0);   //버텍스 쉐이더
+}
